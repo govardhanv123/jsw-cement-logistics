@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Jindal Truck Loads</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial; margin:10px; background:#f9f9f9; }
+    h2 { text-align:center; }
+    .truck-form { max-width:500px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.2); margin-bottom:20px;}
+    input, select, button { width:100%; padding:10px; margin:5px 0; font-size:16px; box-sizing:border-box; }
+    input[type=number] {-moz-appearance:textfield;}
+    input::-webkit-outer-spin-button,input::-webkit-inner-spin-button {-webkit-appearance:none;margin:0;}
+    button { background:#4CAF50; color:white; border:none; cursor:pointer; border-radius:5px; }
+    button:hover{ background:#45a049; }
+    @media screen and (max-width:600px) { .truck-form, button { width:95%; font-size:14px; } }
+  </style>
+</head>
+<body>
+<h2>Jindal Truck Loads</h2>
+
+<div id="truckFormsContainer"></div>
+
+<button onclick="addTruckForm()" style="margin:10px auto; display:block;">Add Another Truck</button>
+<button onclick="submitAllTrucks()" style="margin:10px auto; display:block;">Submit All Trucks</button>
+
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbyWZRTCyNvRRlbA0LYJcjYCc4IiEobpE8-12CeEPfHiFuErp83dAA1kZoBMgGprLB6aJg/exec"; // Replace with your Apps Script Web App URL
+let truckCount = 0;
+
+// Add a new truck form
+function addTruckForm() {
+  truckCount++;
+  const div = document.createElement("div");
+  div.className = "truck-form";
+  div.id = "truckForm"+truckCount;
+  div.innerHTML = `
+    <input type="text" placeholder="Order ID" class="orderId" required><br>
+    <input type="text" placeholder="Vehicle Number" class="vehicleNumber" required><br>
+    <select class="vehicleType" required>
+      <option value="Bulker">Bulker</option>
+      <option value="Civil">Civil</option>
+    </select><br>
+    <input type="number" placeholder="Quantity (Tonnes)" class="quantity" min="0" required><br>
+    <input type="date" class="date" required><br>
+    <input type="text" placeholder="Shipment Address" class="shipmentAddress" required><br>
+    <input type="number" placeholder="Freight" class="freight" min="0"><br>
+    <select class="paymentMode" required>
+      <option value="Advance">Advance</option>
+      <option value="Diesel">Diesel</option>
+    </select><br>
+    <input type="number" placeholder="Payment Amount" class="paymentType" min="0"><br>
+    <input type="number" placeholder="Total Payment" class="totalPayment" min="0"><br>
+  `;
+  div.querySelector(".date").valueAsDate = new Date();
+  document.getElementById("truckFormsContainer").appendChild(div);
+}
+
+// Submit all trucks
+async function submitAllTrucks() {
+  const forms = document.querySelectorAll(".truck-form");
+  const loads = [];
+  forms.forEach(f => {
+    loads.push({
+      orderId: f.querySelector(".orderId").value,
+      vehicleNumber: f.querySelector(".vehicleNumber").value,
+      vehicleType: f.querySelector(".vehicleType").value,
+      quantity: f.querySelector(".quantity").value,
+      date: f.querySelector(".date").value,
+      shipmentAddress: f.querySelector(".shipmentAddress").value,
+      freight: f.querySelector(".freight").value,
+      paymentMode: f.querySelector(".paymentMode").value,
+      paymentType: f.querySelector(".paymentType").value,
+      totalPayment: f.querySelector(".totalPayment").value
+    });
+  });
+  if(loads.length === 0) return alert("Add at least one truck.");
+  await fetch(scriptURL, {method:"POST", body: JSON.stringify({action:"add", loads})});
+  alert("Trucks submitted!");
+  document.getElementById("truckFormsContainer").innerHTML = "";
+  addTruckForm(); // start with one empty form
+}
+
+// Initialize with one form
+addTruckForm();
+</script>
+</body>
+</html>
